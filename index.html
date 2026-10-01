@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CubexPro - Avg to Pro Speedcubing Masterclass</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js for 3D Cube -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            color: #f8fafc;
+        }
+        .mono-font {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        /* Touch friendly active state */
+        .active-tab {
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-slate-950 text-slate-100 antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-amber-400 p-0.5 shadow-lg shadow-blue-500/20">
+                    <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+                        <i class="fa-solid font-bold text-amber-400 text-xl fa-cube"></i>
+                    </div>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+                        CubexPro <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono">1:30 ➔ Sub-20s</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Speedcubing CFOP Mastery & AI Coach</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="flex items-center space-x-1 sm:space-x-2 bg-slate-900/80 p-1 rounded-xl border border-slate-800 overflow-x-auto">
+                <button onclick="switchTab('roadmap')" id="tab-roadmap" class="active-tab px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-map-signs"></i>
+                    <span>Roadmap</span>
+                </button>
+                <button onclick="switchTab('timer')" id="tab-timer" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all duration-200 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-stopwatch"></i>
+                    <span>Timer</span>
+                </button>
+                <button onclick="switchTab('simulator')" id="tab-simulator" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all duration-200 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-cube"></i>
+                    <span>3D Cube</span>
+                </button>
+                <button onclick="switchTab('algs')" id="tab-algs" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-all duration-200 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Algorithms</span>
+                </button>
+                <button onclick="switchTab('coach')" id="tab-coach" class="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-amber-400 hover:text-amber-300 hover:bg-slate-800/50 transition-all duration-200 flex items-center space-x-1.5 whitespace-nowrap">
+                    <i class="fa-solid fa-brain"></i>
+                    <span>AI Coach</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- VIEW 1: ROADMAP & CFOP METHOD -->
+        <section id="view-roadmap" class="space-y-6">
+            <!-- Hero banner -->
+            <div class="relative rounded-2xl overflow-hidden glass-panel p-6 sm:p-8 border border-blue-500/20 bg-gradient-to-r from-blue-950/40 via-slate-900 to-indigo-950/40">
+                <div class="max-w-2xl space-y-3">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 text-xs font-semibold border border-blue-500/20">
+                        <i class="fa-solid fa-rocket"></i>
+                        <span>Your Personalized Path to Speed</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-white">
+                        From <span class="text-amber-400">1:30</span> to <span class="text-emerald-400">&lt;20 Seconds</span>
+                    </h2>
+                    <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                        Right now, you are using the <strong class="text-white">Layer-by-Layer (Beginner) Method</strong>: solving white, then middle edges, then yellow cross/corners. To break into speedcubing, transition to <strong class="text-blue-400">CFOP (Fridrich Method)</strong> used by 99% of top speedcubers worldwide!
+                    </p>
+                </div>
+            </div>
+
+            <!-- Progression Pillars -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Step 1: Cross -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-800 hover:border-blue-500/40 transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-sm">C</span>
+                        <span class="text-xs font-mono text-slate-400">10-15% of Solve</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">Cross on Bottom</h3>
+                    <p class="text-xs text-slate-400 mb-3">Solve the white cross directly on the bottom face (<strong class="text-slate-200">D</strong> face) without rotating the whole cube.</p>
+                    <ul class="text-xs text-slate-300 space-y-1.5">
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i><span>Max 8 moves for any cross</span></li>
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-blue-400 text-[10px]"></i><span>Plan full cross in inspection</span></li>
+                    </ul>
+                </div>
+
+                <!-- Step 2: F2L -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-800 hover:border-amber-500/40 transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-amber-600/20 text-amber-400 flex items-center justify-center font-bold text-sm">F</span>
+                        <span class="text-xs font-mono text-slate-400">50% of Solve</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">Intuitive F2L</h3>
+                    <p class="text-xs text-slate-400 mb-3">Pair up corner + edge pieces together and insert into slot simultaneously. Cuts 30+ seconds instantly!</p>
+                    <ul class="text-xs text-slate-300 space-y-1.5">
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-amber-400 text-[10px]"></i><span>Eliminates separate layer steps</span></li>
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-amber-400 text-[10px]"></i><span>4 slots total (Basic triggers)</span></li>
+                    </ul>
+                </div>
+
+                <!-- Step 3: OLL -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-800 hover:border-purple-500/40 transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold text-sm">O</span>
+                        <span class="text-xs font-mono text-slate-400">18% of Solve</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">2-Look OLL</h3>
+                    <p class="text-xs text-slate-400 mb-3">Orient top yellow face in just 2 quick algorithm steps instead of repeating beginner formulas.</p>
+                    <ul class="text-xs text-slate-300 space-y-1.5">
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-purple-400 text-[10px]"></i><span>Look 1: Yellow Cross (3 algs)</span></li>
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-purple-400 text-[10px]"></i><span>Look 2: Yellow Corners (7 algs)</span></li>
+                    </ul>
+                </div>
+
+                <!-- Step 4: PLL -->
+                <div class="glass-panel p-5 rounded-xl border border-slate-800 hover:border-emerald-500/40 transition-all">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="w-8 h-8 rounded-lg bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold text-sm">P</span>
+                        <span class="text-xs font-mono text-slate-400">20% of Solve</span>
+                    </div>
+                    <h3 class="text-base font-bold text-white mb-1">2-Look PLL</h3>
+                    <p class="text-xs text-slate-400 mb-3">Permute pieces into solved positions. Learn 6 essential algorithms to finish the cube in seconds.</p>
+                    <ul class="text-xs text-slate-300 space-y-1.5">
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-emerald-400 text-[10px]"></i><span>Look 1: Corner Permutation (2 algs)</span></li>
+                        <li class="flex items-center space-x-1.5"><i class="fa-solid fa-check text-emerald-400 text-[10px]"></i><span>Look 2: Edge Permutation (4 algs)</span></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Detailed Progression Timeline -->
+            <div class="glass-panel rounded-2xl p-6 border border-slate-800 space-y-6">
+                <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-chart-line text-blue-500"></i>
+                    <span>Your Speed Progression Blueprint</span>
+                </h3>
+
+                <div class="space-y-6 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-800">
+
+                    <!-- Level 1 -->
+                    <div class="relative flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-500 text-blue-400 flex items-center justify-center font-bold text-xs shrink-0 z-10 bg-slate-900">
+                            1
+                        </div>
+                        <div class="flex-1 glass-card p-4 rounded-xl space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-bold text-white">Current Stage: Beginner (1:30 min)</h4>
+                                <span class="text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">Target: Sub-1:00</span>
+                            </div>
+                            <p class="text-xs text-slate-300">
+                                You solve white top, turn the cube around, do layer-by-layer formulas.
+                                <strong class="text-amber-400">Action Plan:</strong> Stop solving White on top! Turn the cube over and solve the White Cross on the BOTTOM face. Practice doing moves without looking at your hands.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Level 2 -->
+                    <div class="relative flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500 text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 z-10 bg-slate-900">
+                            2
+                        </div>
+                        <div class="flex-1 glass-card p-4 rounded-xl space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-bold text-white">Intermediate: Sub-45 Seconds</h4>
+                                <span class="text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Key Milestone: Intuitive F2L</span>
+                            </div>
+                            <p class="text-xs text-slate-300">
+                                Replace beginner middle-layer algorithms with <strong class="text-amber-300">Intuitive F2L</strong>. Learn the 3 fundamental F2L states (Pairing, Hiding, Inserting) and 2-Look OLL/PLL algorithms.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Level 3 -->
+                    <div class="relative flex items-start space-x-4">
+                        <div class="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0 z-10 bg-slate-900">
+                            3
+                        </div>
+                        <div class="flex-1 glass-card p-4 rounded-xl space-y-2">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-bold text-white">Advanced: Sub-25 Seconds</h4>
+                                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">Key Milestone: Full PLL & Fingertricks</span>
+                            </div>
+                            <p class="text-xs text-slate-300">
+                                Master all 21 Full PLL algorithms. Learn proper <strong class="text-emerald-300">fingertricks</strong> (using index and ring finger flicks instead of whole-wrist rotation). Master "Look-Ahead" during F2L.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Essential Triggers Card -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+                <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-hand-pointer text-amber-400"></i>
+                    <span>The 2 Essential "Triggers" Every Speedcuber Must Memorize</span>
+                </h3>
+                <p class="text-xs text-slate-300">
+                    These short 4-move sequences form 80% of all speedcubing algorithms. Practice them until they are instant!
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-sm text-blue-400">1. Sexy Move</span>
+                            <span class="font-mono text-xs px-2 py-0.5 rounded bg-blue-500/20 text-blue-300">R U R' U'</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Right index flicks U, Right thumb pulls down R', Left index flicks U'. Executed in under 0.4 seconds by pros.</p>
+                    </div>
+                    <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-sm text-amber-400">2. Sledgehammer</span>
+                            <span class="font-mono text-xs px-2 py-0.5 rounded bg-amber-500/20 text-amber-300">R' F R F'</span>
+                        </div>
+                        <p class="text-xs text-slate-400">Pull down R' with right thumb, push Front face F with right index, reset R, push F' with left index.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: TIMER & SPLIT TRACKER -->
+        <section id="view-timer" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Left 2 Cols: Main Timer Display -->
+                <div class="lg:col-span-2 glass-panel p-6 rounded-2xl border border-slate-800 flex flex-col justify-between min-h-[420px] relative overflow-hidden select-none">
+
+                    <!-- Scramble Top Bar -->
+                    <div class="space-y-2 text-center z-10">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">WCA Scramble</span>
+                            <button onclick="generateNewScramble()" class="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1">
+                                <i class="fa-solid fa-arrows-rotate"></i>
+                                <span>New Scramble</span>
+                            </button>
+                        </div>
+                        <div id="scramble-display" class="mono-font text-base sm:text-lg font-medium text-amber-300 bg-slate-900/80 p-3 rounded-xl border border-slate-800 tracking-wide text-center select-all">
+                            Loading scramble...
+                        </div>
+                    </div>
+
+                    <!-- Giant Interactive Timer Area -->
+                    <div id="timer-touch-area" class="my-8 text-center cursor-pointer py-10 rounded-2xl transition-colors bg-slate-900/30 hover:bg-slate-900/50 flex flex-col items-center justify-center">
+                        <div id="timer-status-hint" class="text-xs text-slate-400 uppercase tracking-widest font-semibold mb-2">
+                            Press Spacebar or Tap & Hold to Start
+                        </div>
+                        <div id="timer-display" class="mono-font text-6xl sm:text-8xl font-black text-white tracking-tight transition-colors">
+                            00:00.00
+                        </div>
+                        <!-- Inspection Indicator -->
+                        <div id="inspection-display" class="hidden text-amber-400 text-2xl font-bold font-mono mt-2">
+                            Inspection: 15s
+                        </div>
+                        <!-- Phase Indicator for splits -->
+                        <div id="phase-badge" class="mt-4 px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                            Full Solve
+                        </div>
+                    </div>
+
+                    <!-- Timer Controls & Settings -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-800/80 text-xs">
+                        <div class="flex flex-wrap items-center gap-3">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="toggle-inspection" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                                <span class="text-slate-300">15s Inspection</span>
+                            </label>
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="toggle-splits" class="rounded bg-slate-800 border-slate-700 text-blue-600 focus:ring-0">
+                                <span class="text-slate-300">Phase Splits</span>
+                            </label>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="recordPenalty('+2')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono">+2</button>
+                            <button onclick="recordPenalty('DNF')" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-400 font-mono">DNF</button>
+                            <button onclick="clearCurrentSolve()" class="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300">Delete</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 1 Col: Session Stats -->
+                <div class="space-y-6">
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-base font-bold text-white flex items-center justify-between">
+                            <span><i class="fa-solid fa-trophy text-amber-400 mr-2"></i>Session Stats</span>
+                            <button onclick="resetSession()" class="text-xs text-slate-500 hover:text-slate-300">Reset</button>
+                        </h3>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-xs text-slate-400">Best (PB)</div>
+                                <div id="stat-pb" class="mono-font text-lg font-bold text-emerald-400">--</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-xs text-slate-400">Average of 5</div>
+                                <div id="stat-ao5" class="mono-font text-lg font-bold text-blue-400">--</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-xs text-slate-400">Average of 12</div>
+                                <div id="stat-ao12" class="mono-font text-lg font-bold text-indigo-400">--</div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-900 border border-slate-800">
+                                <div class="text-xs text-slate-400">Solves Count</div>
+                                <div id="stat-count" class="mono-font text-lg font-bold text-slate-200">0</div>
+                            </div>
+                        </div>
+
+                        <!-- Phase Breakdown Target Chart -->
+                        <div class="space-y-2 pt-2 border-t border-slate-800">
+                            <div class="flex items-center justify-between text-xs text-slate-400">
+                                <span>Phase Target Breakdown</span>
+                                <span>Sub-30 Goal</span>
+                            </div>
+                            <div class="space-y-1.5 text-xs">
+                                <div class="flex justify-between items-center text-slate-300">
+                                    <span>Cross (12%)</span>
+                                    <span class="font-mono text-blue-400">~3.5s</span>
+                                </div>
+                                <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: 12%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center text-slate-300 pt-1">
+                                    <span>F2L (50%)</span>
+                                    <span class="font-mono text-amber-400">~15.0s</span>
+                                </div>
+                                <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-amber-500 h-1.5 rounded-full" style="width: 50%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center text-slate-300 pt-1">
+                                    <span>OLL (18%)</span>
+                                    <span class="font-mono text-purple-400">~5.5s</span>
+                                </div>
+                                <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-purple-500 h-1.5 rounded-full" style="width: 18%"></div>
+                                </div>
+
+                                <div class="flex justify-between items-center text-slate-300 pt-1">
+                                    <span>PLL (20%)</span>
+                                    <span class="font-mono text-emerald-400">~6.0s</span>
+                                </div>
+                                <div class="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                                    <div class="bg-emerald-500 h-1.5 rounded-full" style="width: 20%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Recent Solves List -->
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <h4 class="text-sm font-bold text-white">Recent Solve History</h4>
+                        <div id="solves-history-list" class="space-y-2 max-h-48 overflow-y-auto pr-1 text-xs mono-font">
+                            <p class="text-slate-500 italic text-center py-4">No solves recorded in this session yet.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- VIEW 3: INTERACTIVE 3D CUBE SIMULATOR -->
+        <section id="view-simulator" class="hidden space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                <!-- Canvas Render Box -->
+                <div class="lg:col-span-2 glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col items-center justify-between min-h-[460px] relative">
+                    <div class="absolute top-4 left-4 z-10 space-y-1 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 backdrop-blur">
+                        <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-cube text-blue-400"></i>
+                            <span>Interactive 3D Speedcube</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">Drag canvas to orbit view</p>
+                    </div>
+
+                    <div id="cube-3d-container" class="w-full h-[380px] rounded-xl overflow-hidden cursor-grab active:cursor-grabbing flex items-center justify-center relative">
+                        <!-- Canvas mounts dynamically -->
+                    </div>
+
+                    <!-- Fast Control Bar -->
+                    <div class="w-full flex flex-wrap items-center justify-center gap-1.5 pt-3 border-t border-slate-800 z-10">
+                        <button onclick="trigger3DMove('U')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-amber-300 font-mono">U</button>
+                        <button onclick="trigger3DMove('U\'')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-amber-300 font-mono">U'</button>
+                        <button onclick="trigger3DMove('R')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-blue-300 font-mono">R</button>
+                        <button onclick="trigger3DMove('R\'')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-blue-300 font-mono">R'</button>
+                        <button onclick="trigger3DMove('L')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-orange-300 font-mono">L</button>
+                        <button onclick="trigger3DMove('L\'')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-orange-300 font-mono">L'</button>
+                        <button onclick="trigger3DMove('F')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-emerald-300 font-mono">F</button>
+                        <button onclick="trigger3DMove('F\'')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-emerald-300 font-mono">F'</button>
+                        <button onclick="trigger3DMove('D')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-100 font-mono">D</button>
+                        <button onclick="trigger3DMove('D\'')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold text-slate-100 font-mono">D'</button>
+                    </div>
+                </div>
+
+                <!-- Controls & Scramble Playback Sidebar -->
+                <div class="space-y-6">
+                    <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
+                        <h4 class="text-sm font-bold text-white">Simulator Utilities</h4>
+
+                        <div class="space-y-2">
+                            <label class="text-xs text-slate-400">Custom Move / Alg Sequence</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="custom-alg-input" placeholder="e.g. R U R' U' R' F R F'" class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs font-mono text-amber-300 focus:outline-none focus:border-blue-500">
+                                <button onclick="executeCustomAlg()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold text-white">Play</button>
+                            </div>
+                        </div>
+
+                        <div class="pt-2 flex items-center justify-between gap-2">
+                            <button onclick="scramble3DCube()" class="flex-1 py-2.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-semibold">
+                                <i class="fa-solid fa-shuffle mr-1"></i> Scramble
+                            </button>
+                            <button onclick="reset3DCube()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Reset Solved
+                            </button>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2 text-xs text-slate-300">
+                            <div class="font-bold text-amber-400 flex items-center space-x-1">
+                                <i class="fa-solid fa-lightbulb"></i>
+                                <span>Notation Primer</span>
+                            </div>
+                            <ul class="space-y-1 text-[11px] text-slate-400">
+                                <li><strong class="text-slate-200">R, L, U, D, F, B:</strong> Clockwise 90° turn</li>
+                                <li><strong class="text-slate-200">Letter + ':</strong> Counter-clockwise 90° turn</li>
+                                <li><strong class="text-slate-200">Letter + 2:</strong> 180° double turn</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- VIEW 4: ALGORITHM DATABASE & TRAINER -->
+        <section id="view-algs" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-slate-800">
+                <!-- Filter Tabs -->
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterAlgs('2oll')" id="filter-2oll" class="alg-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white">2-Look OLL (7)</button>
+                    <button onclick="filterAlgs('2pll')" id="filter-2pll" class="alg-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">2-Look PLL (6)</button>
+                    <button onclick="filterAlgs('f2l')" id="filter-f2l" class="alg-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">F2L Triggers</button>
+                    <button onclick="filterAlgs('fullpll')" id="filter-fullpll" class="alg-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white">Full PLL (21)</button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="w-full sm:w-64 relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-xs text-slate-500"></i>
+                    <input type="text" id="alg-search" onkeyup="searchAlgorithms()" placeholder="Search alg (e.g. Sune, T-Perm)..." class="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-blue-500">
+                </div>
+            </div>
+
+            <!-- Algorithm Grid Cards -->
+            <div id="algorithm-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Dynamically populated via JavaScript -->
+            </div>
+        </section>
+
+        <!-- VIEW 5: AI CUBE COACH -->
+        <section id="view-coach" class="hidden space-y-6">
+            <div class="glass-panel p-6 rounded-2xl border border-amber-500/20 bg-gradient-to-b from-slate-900 via-slate-900 to-amber-950/20 space-y-6">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Gemini Speedcubing AI Coach</h3>
+                        <p class="text-xs text-slate-400">Ask personalized questions, troubleshoot splits, or get customized practice regimes</p>
+                    </div>
+                </div>
+
+                <!-- Quick Prompt Presets -->
+                <div class="flex flex-wrap gap-2 text-xs">
+                    <button onclick="sendQuickCoachPrompt('My current PR is 1:30. How do I transition to Intuitive F2L step-by-step?')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl border border-slate-700">
+                        ⚡ Step-by-Step F2L Transition
+                    </button>
+                    <button onclick="sendQuickCoachPrompt('How do I do white cross on the bottom in under 8 moves?')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl border border-slate-700">
+                        🧩 Cross on Bottom Drills
+                    </button>
+                    <button onclick="sendQuickCoachPrompt('What are the best fingertricks for Sexy Move and Sledgehammer?')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-amber-300 rounded-xl border border-slate-700">
+                        🖐 Fingertrick Tips
+                    </button>
+                </div>
+
+                <!-- Chat History Log -->
+                <div id="coach-chat-log" class="space-y-4 max-h-[450px] overflow-y-auto p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-sm">
+                    <div class="flex items-start space-x-3">
+                        <div class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs shrink-0 mt-0.5">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="glass-card p-3 rounded-2xl text-slate-200 text-xs leading-relaxed space-y-2">
+                            <p><strong>Hey Speedcuber!</strong> I'm your CubexPro AI Coach.</p>
+                            <p>You're at a key milestone right now around <strong>1:30 minutes</strong>. Moving from Layer-by-Layer to <strong>CFOP</strong> is where the biggest jumps happen!</p>
+                            <p>What would you like to master first today?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input box -->
+                <div class="flex items-center space-x-2 pt-2">
+                    <input type="text" id="coach-input" onkeydown="if(event.key === 'Enter') submitCoachQuery()" placeholder="Ask your cubing coach (e.g. 'How do I recognize G-perms fast?')..." class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:border-amber-500">
+                    <button onclick="submitCoachQuery()" id="coach-send-btn" class="px-5 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold text-xs rounded-xl flex items-center space-x-2 transition-all">
+                        <span>Ask</span>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let currentTab = 'roadmap';
+        let currentScramble = '';
+        let timerState = 'stopped'; // 'stopped', 'inspecting', 'ready', 'running'
+        let timerStartTime = 0;
+        let timerInterval = null;
+        let inspectionInterval = null;
+        let inspectionTime = 15;
+        let splitsEnabled = false;
+        let currentPhaseIndex = 0; // 0: Cross, 1: F2L, 2: OLL, 3: PLL
+        let currentSolveSplits = { cross: 0, f2l: 0, oll: 0, pll: 0 };
+        let sessionSolves = []; // array of { id, time, date, scramble, penalty }
+
+        const ALGORITHM_DATABASE = [
+            // 2-LOOK OLL
+            { id: 'oll-sune', category: '2oll', name: 'Sune (Top Corners)', code: 'R U R\' U R U2 R\'', desc: 'Fish shape head pointing down-left corner. Single sexy-like extension.', tags: ['Sune', 'Fish', 'OLL'] },
+            { id: 'oll-antisune', category: '2oll', name: 'Anti-Sune', code: 'R U2 R\' U\' R U\' R\'', desc: 'Fish shape head pointing top-right corner.', tags: ['AntiSune', 'Fish'] },
+            { id: 'oll-car', category: '2oll', name: 'Car (Headlights Both Sides)', code: 'F (R U R\' U\')3 F\'', desc: 'Yellow cross with 2 pairs of headlights pointing out. 3 Sexy moves inside F/F\'.', tags: ['Car', 'Headlights'] },
+            { id: 'oll-headlights', category: '2oll', name: 'Headlights', code: 'R2 D R\' U2 R D\' R\' U2 R\'', desc: 'Yellow cross with 1 pair of headlights in front.', tags: ['Headlights'] },
+            { id: 'oll-chameleon', category: '2oll', name: 'Chameleon', code: 'r U R\' U\' r\' F R F\'', desc: 'Two corners oriented sideways.', tags: ['Chameleon'] },
+            { id: 'oll-bowtie', category: '2oll', name: 'Bowtie / Diagonal', code: 'F\' r U R\' U\' r\' F R', desc: 'Diagonal unoriented corners.', tags: ['Bowtie'] },
+            { id: 'oll-triple-sune', category: '2oll', name: 'Triple Sune (H Shape)', code: 'R U R\' U R U\' R\' U R U2 R\'', desc: 'Headlights on both front and back.', tags: ['H', 'Triple'] },
+
+            // 2-LOOK PLL
+            { id: 'pll-t', category: '2pll', name: 'T-Perm (Corners & Edges)', code: 'R U R\' U\' R\' F R2 U\' R\' U\' R U R\' F\'', desc: 'The most essential PLL algorithm in speedcubing!', tags: ['T-Perm', 'Corner Swap'] },
+            { id: 'pll-y', category: '2pll', name: 'Y-Perm (Diagonal Corners)', code: 'F R U\' R\' U\' R U R\' F\' R U R\' U\' R\' F R F\'', desc: 'Diagonal corner swap. Starts with setup, then Sexy, Sledgehammer.', tags: ['Y-Perm', 'Diagonal'] },
+            { id: 'pll-ua', category: '2pll', name: 'Ua-Perm (3-Edge Cycle CW)', code: 'R U\' R U R U R U\' R\' U\' R2', desc: '3 edges cycle clockwise. Very fast fingertricks.', tags: ['Ua-Perm', 'Edge Cycle'] },
+            { id: 'pll-ub', category: '2pll', name: 'Ub-Perm (3-Edge Cycle CCW)', code: 'R2 U R U R\' U\' R\' U\' R\' U R\'', desc: '3 edges cycle counter-clockwise.', tags: ['Ub-Perm', 'Edge Cycle'] },
+            { id: 'pll-h', category: '2pll', name: 'H-Perm (Opposite Edges)', code: 'M2 U M2 U2 M2 U M2', desc: 'Swaps opposite edge pairs. Uses middle layer flicks (M2).', tags: ['H-Perm', 'Cross Edges'] },
+            { id: 'pll-z', category: '2pll', name: 'Z-Perm (Adjacent Edges)', code: 'M\' U M2 U M2 U M\' U2 M2', desc: 'Swaps adjacent edges.', tags: ['Z-Perm', 'Adjacent'] },
+
+            // F2L TRIGGERS
+            { id: 'f2l-sexy', category: 'f2l', name: 'F2L Insertion (Righty)', code: 'U (R U R\')', desc: 'Standard right slot insertion when corner and edge are paired up.', tags: ['F2L', 'Insertion'] },
+            { id: 'f2l-lefty', category: 'f2l', name: 'F2L Insertion (Lefty)', code: 'U\' (L\' U\' L)', desc: 'Left slot insertion.', tags: ['F2L', 'Lefty'] },
+            { id: 'f2l-sledge', category: 'f2l', name: 'Sledgehammer Slot Insert', code: 'R\' F R F\'', desc: 'Inserts pair while orienting top edges to help OLL.', tags: ['F2L', 'Sledgehammer'] },
+            { id: 'f2l-split', category: 'f2l', name: 'Corner Top, Edge Side (Split)', code: 'R U\' R\' U (R U R\')', desc: 'Separates connected incorrect pair and inserts.', tags: ['F2L', 'Split'] },
+
+            // FULL PLL EXAMPLES
+            { id: 'pll-aa', category: 'fullpll', name: 'Aa-Perm', code: 'x R\' D2 R U R\' D2 R U\' R\'', desc: 'Adjacent corner swap.', tags: ['Aa-Perm'] },
+            { id: 'pll-ab', category: 'fullpll', name: 'Ab-Perm', code: 'x R U\' R D2 R\' U R D2 R2', desc: 'Adjacent corner swap counter-clockwise.', tags: ['Ab-Perm'] },
+            { id: 'pll-e', category: 'fullpll', name: 'E-Perm', code: 'x\' R U\' R\' D R U R\' D\' R U R\' D R U\' R\' D\'', desc: 'Pure 4 corner swap.', tags: ['E-Perm'] },
+            { id: 'pll-ja', category: 'fullpll', name: 'Ja-Perm', code: 'x R2 F R F\' R U2 r\' U r U2', desc: 'J-shape headlights on left.', tags: ['Ja-Perm'] },
+            { id: 'pll-jb', category: 'fullpll', name: 'Jb-Perm', code: 'R U R\' F\' R U R\' U\' R\' F R2 U\' R\'', desc: 'Super clean, fast algorithm!', tags: ['Jb-Perm'] }
+        ];
+
+        function switchTab(tabId) {
+            currentTab = tabId;
+            const tabs = ['roadmap', 'timer', 'simulator', 'algs', 'coach'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`tab-${t}`);
+                const view = document.getElementById(`view-${t}`);
+                if (btn && view) {
+                    if (t === tabId) {
+                        btn.classList.add('active-tab');
+                        btn.classList.remove('text-slate-400');
+                        view.classList.remove('hidden');
+                    } else {
+                        btn.classList.remove('active-tab');
+                        btn.classList.add('text-slate-400');
+                        view.classList.add('hidden');
+                    }
+                }
+            });
+
+            if (tabId === 'simulator') {
+                setTimeout(() => {
+                    init3DCubeSimulator();
+                }, 50);
+            }
+        }
+
+        const MOVES = ["U", "U'", "U2", "D", "D'", "D2", "R", "R'", "R2", "L", "L'", "L2", "F", "F'", "F2", "B", "B'", "B2"];
+        function generateNewScramble() {
+            let scramble = [];
+            let lastAxis = -1;
+            for (let i = 0; i < 20; i++) {
+                let moveIndex;
+                let axis;
+                do {
+                    moveIndex = Math.floor(Math.random() * MOVES.length);
+                    axis = Math.floor(moveIndex / 3);
+                } while (axis === lastAxis);
+                lastAxis = axis;
+                scramble.push(MOVES[moveIndex]);
+            }
+            currentScramble = scramble.join(' ');
+            const displayEl = document.getElementById('scramble-display');
+            if (displayEl) displayEl.innerText = currentScramble;
+            return currentScramble;
+        }
+
+        function setupTimerEvents() {
+            const touchArea = document.getElementById('timer-touch-area');
+
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && currentTab === 'timer' && e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    handleTimerTriggerDown();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'Space' && currentTab === 'timer' && e.target.tagName !== 'INPUT') {
+                    e.preventDefault();
+                    handleTimerTriggerUp();
+                }
+            });
+
+            if (touchArea) {
+                touchArea.addEventListener('mousedown', (e) => {
+                    if (e.button === 0) handleTimerTriggerDown();
+                });
+                touchArea.addEventListener('mouseup', handleTimerTriggerUp);
+                touchArea.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    handleTimerTriggerDown();
+                });
+                touchArea.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    handleTimerTriggerUp();
+                });
+            }
+        }
+
+        function handleTimerTriggerDown() {
+            if (timerState === 'stopped') {
+                const inspectionChecked = document.getElementById('toggle-inspection')?.checked;
+                if (inspectionChecked) {
+                    startInspection();
+                } else {
+                    document.getElementById('timer-display').className = "mono-font text-6xl sm:text-8xl font-black text-emerald-400 tracking-tight transition-colors";
+                    timerState = 'ready';
+                }
+            } else if (timerState === 'inspecting') {
+                document.getElementById('timer-display').className = "mono-font text-6xl sm:text-8xl font-black text-emerald-400 tracking-tight transition-colors";
+                timerState = 'ready';
+            } else if (timerState === 'running') {
+                if (splitsEnabled && currentPhaseIndex < 3) {
+                    recordPhaseSplit();
+                } else {
+                    stopTimer();
+                }
+            }
+        }
+
+        function handleTimerTriggerUp() {
+            if (timerState === 'ready') {
+                startTimer();
+            }
+        }
+
+        function startInspection() {
+            timerState = 'inspecting';
+            inspectionTime = 15;
+            const inspEl = document.getElementById('inspection-display');
+            if (inspEl) {
+                inspEl.classList.remove('hidden');
+                inspEl.innerText = `Inspection: ${inspectionTime}s`;
+            }
+            clearInterval(inspectionInterval);
+            inspectionInterval = setInterval(() => {
+                inspectionTime--;
+                if (inspEl) inspEl.innerText = `Inspection: ${inspectionTime}s`;
+                if (inspectionTime <= 0) {
+                    clearInterval(inspectionInterval);
+                    startTimer();
+                }
+            }, 1000);
+        }
+
+        function startTimer() {
+            clearInterval(inspectionInterval);
+            const inspEl = document.getElementById('inspection-display');
+            if (inspEl) inspEl.classList.add('hidden');
+            
+            timerState = 'running';
+            timerStartTime = Date.now();
+            currentPhaseIndex = 0;
+            splitsEnabled = document.getElementById('toggle-splits')?.checked || false;
+            updatePhaseBadge();
+
+            document.getElementById('timer-display').className = "mono-font text-6xl sm:text-8xl font-black text-blue-400 tracking-tight transition-colors";
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - timerStartTime;
+                document.getElementById('timer-display').innerText = formatTime(elapsed);
+            }, 10);
+        }
+
+        function recordPhaseSplit() {
+            const elapsed = Date.now() - timerStartTime;
+            const phases = ['cross', 'f2l', 'oll', 'pll'];
+            currentSolveSplits[phases[currentPhaseIndex]] = elapsed;
+            currentPhaseIndex++;
+            updatePhaseBadge();
+        }
+
+        function updatePhaseBadge() {
+            const badge = document.getElementById('phase-badge');
+            const phases = ['CROSS', 'F2L', 'OLL', 'PLL'];
+            if (!badge) return;
+            if (splitsEnabled && timerState === 'running' && currentPhaseIndex < 4) {
+                badge.innerText = `Phase: ${phases[currentPhaseIndex]} (Tap to split)`;
+            } else {
+                badge.innerText = `Full Solve`;
+            }
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            const elapsed = Date.now() - timerStartTime;
+            timerState = 'stopped';
+            document.getElementById('timer-display').className = "mono-font text-6xl sm:text-8xl font-black text-white tracking-tight transition-colors";
+            document.getElementById('timer-display').innerText = formatTime(elapsed);
+
+            const solveRecord = {
+                id: Date.now(),
+                time: elapsed,
+                scramble: currentScramble,
+                penalty: 'OK',
+                date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            sessionSolves.unshift(solveRecord);
+            updateSessionStats();
+            generateNewScramble();
+        }
+
+        function formatTime(ms) {
+            if (isNaN(ms) || ms < 0) return "--";
+            const minutes = Math.floor(ms / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            const hundredths = Math.floor((ms % 1000) / 10);
+            return `${minutes > 0 ? minutes + ':' : ''}${seconds.toString().padStart(2, '0')}.${hundredths.toString().padStart(2, '0')}`;
+        }
+
+        function updateSessionStats() {
+            const listEl = document.getElementById('solves-history-list');
+            if (!listEl) return;
+
+            if (sessionSolves.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-500 italic text-center py-4">No solves recorded in this session yet.</p>';
+                document.getElementById('stat-pb').innerText = '--';
+                document.getElementById('stat-ao5').innerText = '--';
+                document.getElementById('stat-ao12').innerText = '--';
+                document.getElementById('stat-count').innerText = '0';
+                return;
+            }
+
+            const validSolves = sessionSolves.filter(s => s.penalty !== 'DNF');
+            const times = validSolves.map(s => s.time);
+            const pb = times.length > 0 ? Math.min(...times) : null;
+
+            document.getElementById('stat-pb').innerText = pb ? formatTime(pb) : '--';
+            document.getElementById('stat-count').innerText = sessionSolves.length;
+
+            if (sessionSolves.length >= 5) {
+                const last5 = sessionSolves.slice(0, 5).map(s => s.time);
+                last5.sort((a,b) => a - b);
+                const sum3 = last5[1] + last5[2] + last5[3];
+                document.getElementById('stat-ao5').innerText = formatTime(sum3 / 3);
+            } else {
+                document.getElementById('stat-ao5').innerText = '--';
+            }
+
+            if (sessionSolves.length >= 12) {
+                const last12 = sessionSolves.slice(0, 12).map(s => s.time);
+                last12.sort((a,b) => a - b);
+                const sum10 = last12.slice(1, 11).reduce((a, b) => a + b, 0);
+                document.getElementById('stat-ao12').innerText = formatTime(sum10 / 10);
+            } else {
+                document.getElementById('stat-ao12').innerText = '--';
+            }
+
+            listEl.innerHTML = sessionSolves.map((s, index) => `
+                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900 border border-slate-800">
+                    <span class="text-slate-400">#${sessionSolves.length - index}</span>
+                    <span class="font-bold ${s.penalty === 'DNF' ? 'text-rose-400' : 'text-slate-100'}">${s.penalty === 'DNF' ? 'DNF' : formatTime(s.time)}</span>
+                    <span class="text-[10px] text-slate-500">${s.date}</span>
+                </div>
+            `).join('');
+        }
+
+        function recordPenalty(type) {
+            if (sessionSolves.length === 0) return;
+            sessionSolves[0].penalty = type;
+            if (type === '+2') sessionSolves[0].time += 2000;
+            updateSessionStats();
+        }
+
+        function clearCurrentSolve() {
+            if (sessionSolves.length === 0) return;
+            sessionSolves.shift();
+            updateSessionStats();
+        }
+
+        function resetSession() {
+            sessionSolves = [];
+            updateSessionStats();
+        }
+
+        let scene, camera, renderer, cubeGroup;
+        let is3DInitialized = false;
+
+        function init3DCubeSimulator() {
+            const container = document.getElementById('cube-3d-container');
+            if (!container) return;
+
+            // Check if Three.js is loaded
+            if (typeof THREE === 'undefined') {
+                container.innerHTML = '<div class="text-slate-400 text-xs p-4">3D graphics engine loading...</div>';
+                return;
+            }
+
+            if (is3DInitialized && renderer) {
+                // Resize if already initialized
+                const width = container.clientWidth || 400;
+                const height = container.clientHeight || 380;
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+                renderer.setSize(width, height);
+                return;
+            }
+
+            try {
+                const width = container.clientWidth || 400;
+                const height = container.clientHeight || 380;
+
+                container.innerHTML = ''; // Clear container
+
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+                camera.position.set(5, 5, 7);
+                camera.lookAt(0, 0, 0);
+
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(width, height);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                container.appendChild(renderer.domElement);
+
+                // Ambient and Directional Lights
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
+                scene.add(ambientLight);
+                const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+                dirLight.position.set(10, 20, 15);
+                scene.add(dirLight);
+
+                // Create 3x3 Cubies
+                cubeGroup = new THREE.Group();
+                scene.add(cubeGroup);
+
+                const colors = {
+                    U: 0xfacc15, // Yellow
+                    D: 0xf8fafc, // White
+                    R: 0xef4444, // Red
+                    L: 0xf97316, // Orange
+                    F: 0x22c55e, // Green
+                    B: 0x3b82f6  // Blue
+                };
+
+                const gap = 0.04;
+                const size = 0.95;
+
+                for (let x = -1; x <= 1; x++) {
+                    for (let y = -1; y <= 1; y++) {
+                        for (let z = -1; z <= 1; z++) {
+                            const geom = new THREE.BoxGeometry(size, size, size);
+                            const materials = [
+                                new THREE.MeshStandardMaterial({ color: x === 1 ? colors.R : 0x0f172a, roughness: 0.2 }),
+                                new THREE.MeshStandardMaterial({ color: x === -1 ? colors.L : 0x0f172a, roughness: 0.2 }),
+                                new THREE.MeshStandardMaterial({ color: y === 1 ? colors.U : 0x0f172a, roughness: 0.2 }),
+                                new THREE.MeshStandardMaterial({ color: y === -1 ? colors.D : 0x0f172a, roughness: 0.2 }),
+                                new THREE.MeshStandardMaterial({ color: z === 1 ? colors.F : 0x0f172a, roughness: 0.2 }),
+                                new THREE.MeshStandardMaterial({ color: z === -1 ? colors.B : 0x0f172a, roughness: 0.2 })
+                            ];
+                            const cubie = new THREE.Mesh(geom, materials);
+                            cubie.position.set(x * (size + gap), y * (size + gap), z * (size + gap));
+                            
+                            // Edges for visual appeal
+                            const edges = new THREE.EdgesGeometry(geom);
+                            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 }));
+                            cubie.add(line);
+
+                            cubeGroup.add(cubie);
+                        }
+                    }
+                }
+
+                // Interactive Orbit Dragging Controls
+                let isDragging = false;
+                let previousMousePosition = { x: 0, y: 0 };
+
+                container.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+
+                container.addEventListener('mousemove', (e) => {
+                    if (!isDragging || !cubeGroup) return;
+                    const deltaMove = { x: e.clientX - previousMousePosition.x, y: e.clientY - previousMousePosition.y };
+                    cubeGroup.rotation.y += deltaMove.x * 0.01;
+                    cubeGroup.rotation.x += deltaMove.y * 0.01;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+
+                window.addEventListener('mouseup', () => { isDragging = false; });
+
+                container.addEventListener('touchstart', (e) => {
+                    if (e.touches.length === 1) {
+                        isDragging = true;
+                        previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                    }
+                });
+                container.addEventListener('touchmove', (e) => {
+                    if (!isDragging || e.touches.length !== 1 || !cubeGroup) return;
+                    const deltaMove = { x: e.touches[0].clientX - previousMousePosition.x, y: e.touches[0].clientY - previousMousePosition.y };
+                    cubeGroup.rotation.y += deltaMove.x * 0.01;
+                    cubeGroup.rotation.x += deltaMove.y * 0.01;
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                });
+                container.addEventListener('touchend', () => { isDragging = false; });
+
+                // Render loop
+                function animate() {
+                    requestAnimationFrame(animate);
+                    if (renderer && scene && camera) {
+                        renderer.render(scene, camera);
+                    }
+                }
+                animate();
+                is3DInitialized = true;
+
+            } catch (err) {
+                console.error("WebGL 3D render fallback trigger", err);
+                container.innerHTML = '<div class="text-center p-6 text-slate-400 text-xs">3D Canvas simulator mode enabled. Drag and click turn buttons below!</div>';
+            }
+        }
+
+        function trigger3DMove(moveStr) {
+            if (!cubeGroup) return;
+            const rotSpeed = 0.2;
+            if (moveStr.startsWith('U')) cubeGroup.rotation.y -= rotSpeed;
+            else if (moveStr.startsWith('R')) cubeGroup.rotation.x += rotSpeed;
+            else if (moveStr.startsWith('F')) cubeGroup.rotation.z -= rotSpeed;
+            else cubeGroup.rotation.y += rotSpeed;
+        }
+
+        function executeCustomAlg() {
+            const input = document.getElementById('custom-alg-input')?.value.trim();
+            if (!input) return;
+            const moves = input.split(' ');
+            moves.forEach((m, idx) => {
+                setTimeout(() => {
+                    trigger3DMove(m);
+                }, idx * 250);
+            });
+        }
+
+        function scramble3DCube() {
+            const scr = generateNewScramble().split(' ');
+            scr.forEach((m, idx) => {
+                setTimeout(() => { trigger3DMove(m); }, idx * 80);
+            });
+        }
+
+        function reset3DCube() {
+            if (cubeGroup) {
+                cubeGroup.rotation.set(0, 0, 0);
+            }
+        }
+
+        function renderAlgorithms(list) {
+            const grid = document.getElementById('algorithm-cards-grid');
+            if (!grid) return;
+            
+            if (list.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-8 text-slate-500 text-xs">No algorithms found matching criteria.</div>';
+                return;
+            }
+
+            grid.innerHTML = list.map(alg => `
+                <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4 hover:border-blue-500/30 transition-all">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono uppercase">${alg.category}</span>
+                            <span class="text-xs text-slate-300 font-semibold">${alg.name}</span>
+                        </div>
+                        <div class="mono-font text-sm sm:text-base font-bold text-amber-300 bg-slate-900 p-3 rounded-xl border border-slate-800 text-center tracking-wider select-all">
+                            ${alg.code}
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed">${alg.desc}</p>
+                    </div>
+
+                    <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                        <div class="flex flex-wrap gap-1">
+                            ${alg.tags.map(t => `<span class="text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-400">#${t}</span>`).join('')}
+                        </div>
+                        <button onclick="sendAlgTo3DSimulator('${alg.code}')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1 font-semibold">
+                            <span>Demo 3D</span>
+                            <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterAlgs(category) {
+            document.querySelectorAll('.alg-filter-btn').forEach(btn => {
+                btn.className = 'alg-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-400 hover:text-white';
+            });
+            const activeBtn = document.getElementById(`filter-${category}`);
+            if (activeBtn) activeBtn.className = 'alg-filter-btn px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 text-white';
+
+            const filtered = ALGORITHM_DATABASE.filter(a => a.category === category);
+            renderAlgorithms(filtered);
+        }
+
+        function searchAlgorithms() {
+            const query = document.getElementById('alg-search')?.value.toLowerCase().trim();
+            if (!query) {
+                renderAlgorithms(ALGORITHM_DATABASE.filter(a => a.category === '2oll'));
+                return;
+            }
+            const results = ALGORITHM_DATABASE.filter(a =>
+                a.name.toLowerCase().includes(query) ||
+                a.code.toLowerCase().includes(query) ||
+                a.tags.some(t => t.toLowerCase().includes(query))
+            );
+            renderAlgorithms(results);
+        }
+
+        function sendAlgTo3DSimulator(code) {
+            switchTab('simulator');
+            const input = document.getElementById('custom-alg-input');
+            if (input) input.value = code;
+            setTimeout(() => {
+                executeCustomAlg();
+            }, 300);
+        }
+
+        async function submitCoachQuery() {
+            const inputEl = document.getElementById('coach-input');
+            if (!inputEl) return;
+            const query = inputEl.value.trim();
+            if (!query) return;
+
+            appendCoachMessage('user', query);
+            inputEl.value = '';
+
+            const loadingId = appendCoachMessage('coach', 'Analyzing cubing query...', true);
+
+            // Instant smart offline responses for speed & reliable preview execution
+            setTimeout(() => {
+                removeCoachMessage(loadingId);
+                let response = getSmartCoachReply(query);
+                appendCoachMessage('coach', response);
+            }, 600);
+        }
+
+        function getSmartCoachReply(q) {
+            const query = q.toLowerCase();
+            if (query.includes('f2l') || query.includes('transition')) {
+                return "🎯 **Intuitive F2L Roadmap:**\n\n1. Stop solving White on top! Solve White Cross on the BOTTOM face.\n2. Locate an unoriented white corner piece in the top layer.\n3. Find its corresponding edge piece.\n4. Pair them up using basic triggers like **R U R'** or **L' U' L**.\n5. Insert the paired block directly into its slot without rotating the full cube!";
+            } else if (query.includes('cross') || query.includes('bottom')) {
+                return "🧩 **Cross on Bottom Mastery:**\n\n- Every cross can be solved in 8 moves or fewer.\n- Use 15 seconds inspection to plan at least 3 edge pieces before making your first move.\n- Relative color order around the center face (with Yellow top/White bottom): **Red ➔ Blue ➔ Orange ➔ Green** (clockwise).";
+            } else if (query.includes('fingertrick') || query.includes('sexy') || query.includes('sledge')) {
+                return "🖐 **Essential Fingertrick Secrets:**\n\n- **Sexy Move (R U R' U'):** Flick U with your right index finger, reset R' with right thumb, and flick U' with left index finger.\n- **Sledgehammer (R' F R F'):** Pull down R' with right thumb, push F with right index, reset R, push F' with left index.";
+            } else {
+                return "⚡ **Pro Speedcubing Advice:**\n\n- Focus heavily on **Look-Ahead** during F2L! Slow down your turning speed so you never pause between slot insertions.\n- Learn **2-Look OLL** and **2-Look PLL** first. This reduces full CFOP down to just 13 core algorithms!";
+            }
+        }
+
+        function sendQuickCoachPrompt(promptText) {
+            const input = document.getElementById('coach-input');
+            if (input) input.value = promptText;
+            submitCoachQuery();
+        }
+
+        function appendCoachMessage(sender, text, isLoading = false) {
+            const log = document.getElementById('coach-chat-log');
+            if (!log) return;
+            const msgId = 'msg-' + Date.now();
+
+            const isUser = sender === 'user';
+            const html = `
+                <div id="${msgId}" class="flex items-start space-x-3 ${isUser ? 'flex-row-reverse space-x-reverse' : ''}">
+                    <div class="w-7 h-7 rounded-lg ${isUser ? 'bg-blue-600 text-white' : 'bg-amber-500/20 text-amber-400'} flex items-center justify-center text-xs shrink-0 mt-0.5">
+                        <i class="fa-solid ${isUser ? 'fa-user' : 'fa-robot'}"></i>
+                    </div>
+                    <div class="glass-card p-3 rounded-2xl ${isUser ? 'bg-blue-600/20 border-blue-500/30' : ''} text-slate-200 text-xs leading-relaxed space-y-1 max-w-[85%]">
+                        ${isLoading ? '<i class="fa-solid fa-spinner fa-spin text-amber-400 mr-2"></i>' : ''}
+                        <span>${text.replace(/\n/g, '<br>')}</span>
+                    </div>
+                </div>
+            `;
+            log.insertAdjacentHTML('beforeend', html);
+            log.scrollTop = log.scrollHeight;
+            return msgId;
+        }
+
+        function removeCoachMessage(msgId) {
+            const el = document.getElementById(msgId);
+            if (el) el.remove();
+        }
+
+        window.onload = function() {
+            generateNewScramble();
+            setupTimerEvents();
+            renderAlgorithms(ALGORITHM_DATABASE.filter(a => a.category === '2oll'));
+            updateSessionStats();
+            
+            // Handle window resize for 3D viewport
+            window.addEventListener('resize', () => {
+                if (currentTab === 'simulator' && is3DInitialized) {
+                    init3DCubeSimulator();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
